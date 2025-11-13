@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saman.lk - Buy & Sell Cars in Sri Lanka</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+  body{background:#0d1b2a;color:#fff;}
+
+  header{background:#102542;display:flex;justify-content:space-between;align-items:center;padding:15px 40px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+  .logo{font-size:1.8em;font-weight:700;color:#00b4d8;}
+  nav a{color:white;text-decoration:none;margin:0 12px;font-weight:500;transition:0.3s;cursor:pointer;}
+  nav a:hover,nav a.active{color:#00b4d8;}
+
+  .hero{background:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.7)),url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;color:white;text-align:center;padding:120px 20px;}
+  .hero h1{font-size:3em;margin-bottom:10px;}
+  .hero p{font-size:1.2em;margin-bottom:20px;opacity:0.9;}
+  .btn{background:#00b4d8;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:600;transition:0.3s;}
+  .btn:hover{background:#0096c7;}
+
+  .hidden{display:none;}
+
+  .car-listings{padding:40px 20px;text-align:center;}
+  .car-listings h2{color:#00b4d8;font-size:1.8em;margin-bottom:20px;}
+  .car-container{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;}
+  .car-card{background:#1b263b;border-radius:8px;width:320px;box-shadow:0 2px 10px rgba(0,0,0,0.4);overflow:hidden;cursor:pointer;transition:0.3s;}
+  .car-card:hover{transform:translateY(-5px);}
+  .car-card img{width:100%;height:200px;object-fit:cover;}
+  .car-info{padding:15px;text-align:left;}
+  .car-info h3{color:#00b4d8;margin-bottom:6px;font-size:1.1em;}
+  .car-info p{font-size:0.9em;color:#ddd;}
+  .delete-btn{background:#e63946;color:white;padding:5px 10px;border:none;border-radius:5px;margin-top:5px;cursor:pointer;}
+  .delete-btn:hover{background:#d62828;}
+
+  .form-section{padding:40px 20px;max-width:550px;margin:auto;text-align:center;}
+  form input,form textarea,form button{width:100%;margin:10px 0;padding:12px;border-radius:6px;border:1px solid #2c3e50;font-size:1em;background:#1b263b;color:#fff;}
+  form textarea{height:100px;resize:none;}
+  form input::placeholder,form textarea::placeholder{color:#ccc;}
+  form button{background:#00b4d8;border:none;cursor:pointer;font-weight:600;transition:0.3s;}
+  form button:hover{background:#0096c7;}
+
+  h4{color:#00b4d8;margin-top:15px;}
+  footer{background:#102542;color:#ccc;text-align:center;padding:15px;margin-top:40px;font-size:0.9em;}
+
+  .detail-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:100;visibility:hidden;opacity:0;transition:0.3s;}
+  .detail-overlay.active{visibility:visible;opacity:1;}
+  .detail-box{background:#1b263b;padding:20px;border-radius:8px;max-width:800px;width:95%;max-height:90vh;overflow-y:auto;}
+  .detail-box h2{color:#00b4d8;margin-bottom:10px;text-align:center;}
+  .detail-box img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:10px;}
+  .detail-info p{margin:5px 0;color:#ddd;}
+  .close-btn{background:#e63946;border:none;color:white;padding:8px 16px;border-radius:5px;cursor:pointer;margin-top:10px;}
+  .close-btn:hover{background:#d62828;}
+
+  .search-bar{margin:20px auto;max-width:550px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .search-bar input{flex:1 1 120px;padding:10px;border-radius:6px;border:1px solid #2c3e50;background:#1b263b;color:#fff;}
+  .search-bar button{padding:10px 20px;border:none;border-radius:6px;background:#00b4d8;color:#fff;cursor:pointer;transition:0.3s;}
+  .search-bar button:hover{background:#0096c7;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🚗 Saman.lk</div>
+  <nav>
+    <a id="homeLink" class="active">Home</a>
+    <a id="addLink">Post Your Ad</a>
+    <a id="loginLink">Login / Register</a>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <h1>Welcome to Saman.lk</h1>
+  <p>Buy and sell cars easily — the trusted way in Sri Lanka</p>
+  <a href="#" id="goToForm" class="btn">Post an Ad</a>
+</section>
+
+<section class="car-listings" id="car-list">
+  <h2>Latest Vehicles</h2>
+
+  <div class="search-bar">
+    <input type="text" id="searchTitle" placeholder="Search by title or model">
+    <input type="number" id="searchMinPrice" placeholder="Min Price (Rs.)">
+    <input type="number" id="searchMaxPrice" placeholder="Max Price (Rs.)">
+    <input type="text" id="searchLocation" placeholder="Location">
+    <button id="searchBtn">Search</button>
+    <button id="clearSearchBtn">Clear</button>
+  </div>
+
+  <div class="car-container" id="carContainer"></div>
+</section>
+
+<section class="form-section hidden" id="formSection">
+  <h2>Post Your Vehicle</h2>
+  <form id="carForm">
+    <input type="text" id="carTitle" placeholder="Vehicle Title (e.g. Toyota Corolla 2018)" required>
+    <input type="text" id="carPrice" placeholder="Price (Rs.)" required>
+    <input type="text" id="carLocation" placeholder="Location" required>
+    <input type="text" id="carMileage" placeholder="Mileage (km)" required>
+    <input type="text" id="carPhone" placeholder="Phone Number" required>
+    <textarea id="carDescription" placeholder="Description" required></textarea>
+    <h4>Upload up to 6 images</h4>
+    <input type="file" class="carImage" accept="image/*" required>
+    <input type="file" class="carImage" accept="image/*">
+    <input type="file" class="carImage" accept="image/*">
+    <input type="file" class="carImage" accept="image/*">
+    <input type="file" class="carImage" accept="image/*">
+    <input type="file" class="carImage" accept="image/*">
+    <button type="submit">Add Vehicle</button>
+  </form>
+</section>
+
+<section class="form-section hidden" id="loginSection">
+  <h2>Login / Register</h2>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <label><input type="checkbox" id="rememberMe"> Remember me</label>
+    <button type="submit">Login / Register</button>
+  </form>
+</section>
+
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-box" id="detailBox">
+    <button class="close-btn" id="closeDetail">Close</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025 Saman.lk | Buy & Sell Cars in Sri Lanka</p>
+</footer>
+
+<script>
+const homeLink=document.getElementById("homeLink");
+const addLink=document.getElementById("addLink");
+const loginLink=document.getElementById("loginLink");
+const hero=document.getElementById("hero");
+const carList=document.getElementById("car-list");
+const formSection=document.getElementById("formSection");
+const loginSection=document.getElementById("loginSection");
+const goToForm=document.getElementById("goToForm");
+const carContainer=document.getElementById("carContainer");
+const detailOverlay=document.getElementById("detailOverlay");
+const detailContent=document.getElementById("detailContent");
+const closeDetail=document.getElementById("closeDetail");
+
+function showHome(){
+  hero.classList.remove("hidden");
+  carList.classList.remove("hidden");
+  formSection.classList.add("hidden");
+  loginSection.classList.add("hidden");
+  homeLink.classList.add("active");
+  addLink.classList.remove("active");
+  loginLink.classList.remove("active");
+}
+function showForm(){
+  hero.classList.add("hidden");
+  carList.classList.add("hidden");
+  formSection.classList.remove("hidden");
+  loginSection.classList.add("hidden");
+  addLink.classList.add("active");
+  homeLink.classList.remove("active");
+  loginLink.classList.remove("active");
+}
+function showLogin(){
+  hero.classList.add("hidden");
+  carList.classList.add("hidden");
+  formSection.classList.add("hidden");
+  loginSection.classList.remove("hidden");
+  loginLink.classList.add("active");
+  homeLink.classList.remove("active");
+  addLink.classList.remove("active");
+}
+
+homeLink.addEventListener("click",showHome);
+addLink.addEventListener("click",showForm);
+loginLink.addEventListener("click",showLogin);
+goToForm.addEventListener("click",()=>addLink.click());
+
+// Login/Register
+const loginForm=document.getElementById("loginForm");
+let currentUser=null;
+
+if(localStorage.getItem("rememberedUser")){
+  currentUser=localStorage.getItem("rememberedUser");
+  alert("Welcome back, "+currentUser);
+}
+
+loginForm.addEventListener("submit",function(e){
+  e.preventDefault();
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value;
+  let users=JSON.parse(localStorage.getItem("users"))||{};
+
+  // Admin account
+  if(username==="Dewjangeekiyanage03@gmail.com" && password==="ds2025ds"){
+    currentUser=username;
+    alert("Welcome, Admin!");
+    showHome();
+    displayCars();
+    return;
+  }
+
+  if(users[username]){
+    if(users[username]!==password){alert("Incorrect password");return;}
+  } else {
+    users[username]=password;
+    localStorage.setItem("users",JSON.stringify(users));
+    alert("User registered");
+  }
+
+  if(document.getElementById("rememberMe").checked){
+    localStorage.setItem("rememberedUser",username);
+  }
+  currentUser=username;
+  showHome();
+  displayCars();
+});
+
+// Add Vehicle
+document.getElementById("carForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!currentUser){alert("Please login first!");return;}
+  const imageInputs=document.querySelectorAll(".carImage");
+  const imagePromises=[];
+  imageInputs.forEach(input=>{
+    if(input.files[0]){
+      const reader=new FileReader();
+      imagePromises.push(new Promise(resolve=>{
+        reader.onload=()=>resolve(reader.result);
+        reader.readAsDataURL(input.files[0]);
+      }));
+    }
+  });
+  Promise.all(imagePromises).then(images=>{
+    const car={
+      title:document.getElementById("carTitle").value,
+      price:document.getElementById("carPrice").value,
+      location:document.getElementById("carLocation").value,
+      mileage:document.getElementById("carMileage").value,
+      phone:document.getElementById("carPhone").value,
+      description:document.getElementById("carDescription").value,
+      images,
+      user:currentUser
+    };
+    const cars=JSON.parse(localStorage.getItem("cars"))||[];
+    cars.push(car);
+    localStorage.setItem("cars",JSON.stringify(cars));
+    document.getElementById("carForm").reset();
+    displayCars();
+    homeLink.click();
+    alert("✅ Vehicle added successfully!");
+  });
+});
+
+// Display Ads
+function displayCars(){renderCars(JSON.parse(localStorage.getItem("cars"))||[]);}
+
+function renderCars(carsArray){
+  carContainer.innerHTML="";
+  if(carsArray.length===0){carContainer.innerHTML="<p>No vehicles listed yet.</p>";} 
+  else {
+    carsArray.slice().reverse().forEach((car,index)=>{
+      const card=document.createElement("div");
+      card.classList.add("car-card");
+      card.innerHTML=`<img src="${car.images[0]||''}" alt="${car.title}">
+                        <div class="car-info">
+                          <h3>${car.title}</h3>
+                          <p><strong>Rs. ${car.price}</strong></p>
+                        </div>`;
+      card.addEventListener("click",()=>showDetails(car));
+
+      // Delete button for owner or admin
+      if(car.user===currentUser || isAdmin()){
+        const delBtn=document.createElement("button");
+        delBtn.classList.add("delete-btn");
+        delBtn.textContent="Delete";
+        delBtn.addEventListener("click",(e)=>{
+          e.stopPropagation();
+          deleteCar(carsArray.length-1-index);
+        });
+        card.querySelector(".car-info").appendChild(delBtn);
+      }
+
+      carContainer.appendChild(card);
+    });
+  }
+}
+
+function deleteCar(index){
+  let cars=JSON.parse(localStorage.getItem("cars"))||[];
+  cars.splice(index,1);
+  localStorage.setItem("cars",JSON.stringify(cars));
+  displayCars();
+}
+
+function isAdmin(){return currentUser==="Dewjangeekiyanage03@gmail.com";}
+
+// Details
+function showDetails(car){
+  detailContent.innerHTML=`<h2>${car.title}</h2>${car.images.map(img=>`<img src="${img}" alt="">`).join("")}
+  <div class="detail-info">
+    <p><strong>Price:</strong> Rs. ${car.price}</p>
+    <p><strong>Location:</strong> ${car.location}</p>
+    <p><strong>Mileage:</strong> ${car.mileage} km</p>
+    <p><strong>Phone:</strong> ${car.phone}</p>
+    <p>${car.description}</p>
+  </div>`;
+  detailOverlay.classList.add("active");
+}
+
+closeDetail.addEventListener("click",()=>detailOverlay.classList.remove("active"));
+
+// Search
+const searchBtn=document.getElementById("searchBtn");
+const clearSearchBtn=document.getElementById("clearSearchBtn");
+
+searchBtn.addEventListener("click",()=>{
+  const titleFilter=document.getElementById("searchTitle").value.trim().toLowerCase();
+  const minPrice=parseFloat(document.getElementById("searchMinPrice").value)||0;
+  const maxPrice=parseFloat(document.getElementById("searchMaxPrice").value)||Infinity;
+  const locationFilter=document.getElementById("searchLocation").value.trim().toLowerCase();
+  const cars=JSON.parse(localStorage.getItem("cars"))||[];
+  const filtered=cars.filter(car=>{
+    const matchesTitle=car.title.toLowerCase().includes(titleFilter);
+    const priceNum=parseFloat(car.price)||0;
+    const matchesPrice=(priceNum>=minPrice&&priceNum<=maxPrice);
+    const matchesLocation=locationFilter===""||car.location.toLowerCase().includes(locationFilter);
+    return matchesTitle&&matchesPrice&&matchesLocation;
+  });
+  renderCars(filtered);
+});
+
+clearSearchBtn.addEventListener("click",()=>{
+  document.getElementById("searchTitle").value="";
+  document.getElementById("searchMinPrice").value="";
+  document.getElementById("searchMaxPrice").value="";
+  document.getElementById("searchLocation").value="";
+  displayCars();
+});
+
+displayCars();
+</script>
+</body>
+</html>
